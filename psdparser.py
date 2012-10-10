@@ -359,6 +359,10 @@ class PSDParser():
             result = ''
             for count in range(len):
                 val = self._readf(">H")[0]
+                # Nick Oct 9 2012 - Updated to substitute _ for unrecognized characters
+                if val > 255:
+                    logging.warn("Unhandled character value %d %s " % (val , "replacing with _ (95)"))
+                    val = 95
                 if val: result += chr(val)
             return result
 
