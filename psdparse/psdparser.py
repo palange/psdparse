@@ -16,7 +16,6 @@
 # along with Psdparser.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import sys
 from struct import unpack, calcsize
 from PIL import Image
 
@@ -143,7 +142,7 @@ PIL_BANDS = {
 }
 
 def INDENT_OUTPUT(depth, msg):
-    return ''.join(['    ' for i in range(0, depth)]) + msg
+    return ''.join(['    ' for _ in range(0, depth)]) + msg
 
 class PSDParser(object):
 
@@ -165,9 +164,9 @@ class PSDParser(object):
         """same or next multiple of 4"""
         return (i + 3) / 4 * 4
 
-    def _readf(self, format):
+    def _readf(self, fmt):
         """read a strct from file structure according to format"""
-        return unpack(format, self.fd.read(calcsize(format)))
+        return unpack(fmt, self.fd.read(calcsize(fmt)))
 
     def _skip_block(self, desc, indent=0, new_line=False):
         (n,) = self._readf('>L') # (n,) is a 1-tuple.
@@ -273,8 +272,6 @@ class PSDParser(object):
             if li['chids'][idx] == -2:
                 rows, cols = li['mask']['rows'], li['mask']['cols']
 
-            rb = (cols * depth + 7) / 8 # round to next byte
-
             # channel header
             chpos = self.fd.tell()
             (comp,) = self._readf(">H")
@@ -354,19 +351,19 @@ class PSDParser(object):
     def _read_descriptor(self):
         # Descriptor
         def _unicode_string():
-            len = self._readf(">L")[0]
+            length = self._readf(">L")[0]
             result = u''
-            for count in range(len):
+            for _ in range(length):
                 val = self._readf(">H")[0]
                 if val:
                     result += unichr(val)
             return result
 
         def _string_or_key():
-            len = self._readf(">L")[0]
-            if not len:
-                len = 4
-            return self._readf(">%ds" % len)[0]
+            length = self._readf(">L")[0]
+            if not length:
+                length = 4
+            return self._readf(">%ds" % length)[0]
 
         def _desc_TEXT():
             return _unicode_string()
@@ -390,8 +387,8 @@ class PSDParser(object):
             # http://telegraphics.com.au/svn/psdparse
             # descriptor.c pdf.c
 
-            len = self._readf(">L")[0]
-            pdf_data = self.fd.read(len)
+            length = self._readf(">L")[0]
+            pdf_data = self.fd.read(length)
             return pdf_data
 
         _desc_item_factory = {
@@ -410,7 +407,7 @@ class PSDParser(object):
         item_count = self._readf(">L")[0]
         #logger.debug(INDENT_OUTPUT(4, "item_count=%d" % (item_count)))
         items = {}
-        for item_index in range(item_count):
+        for _ in range(item_count):
             item_key = _string_or_key()
             item_type = self._readf(">4s")[0]
             if not item_type in _desc_item_factory:
@@ -553,7 +550,7 @@ class PSDParser(object):
                         if key == 'luni':
                             namelen = self._readf(">L")[0]
                             l['name'] = u''
-                            for count in range(0, namelen):
+                            for _ in range(0, namelen):
                                 l['name'] += unichr(self._readf(">H")[0])
 
                             logger.debug(INDENT_OUTPUT(4, u"Unicode Name: '%s'" % l['name']))
