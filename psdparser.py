@@ -581,6 +581,12 @@ class PSDParser():
                             l['text_layer']['top'] = top
                             l['text_layer']['right'] = right
                             l['text_layer']['bottom'] = bottom
+                        elif key == 'lyid':
+                            layer_id = self._readf(">L")[0]
+                            logging.debug(INDENT_OUTPUT(4, "Layer ID: '%d'" % layer_id))
+                        elif key == 'lsct':
+                            l['section_divider'] = self._readf(">L")[0]
+                            logging.debug(INDENT_OUTPUT(4, "Layer Sect: '%d'" % l['section_divider']))
                                                     
                         self.fd.seek(next_addl_offset, 0)                        
                     
